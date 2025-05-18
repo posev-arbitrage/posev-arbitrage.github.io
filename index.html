@@ -90,7 +90,7 @@ window.addEventListener('resize', resize);
 resize();
 
 function fireLaser(x, y) {
-  const maxBounces = 6;
+  const maxBounces = 20;
   const angle = Math.random() * 2 * Math.PI;
   let vx = Math.cos(angle) * 10;
   let vy = Math.sin(angle) * 10;
@@ -119,7 +119,7 @@ function fireLaserRandomly() {
   fireLaser(x, y);
 }
 
-setInterval(fireLaserRandomly, 2000);
+setInterval(fireLaserRandomly, 100);
 </script>
 
 
