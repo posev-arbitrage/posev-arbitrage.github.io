@@ -54,6 +54,76 @@
     <p class="mb-6 max-w-xl mx-auto text-gray-600">This tool is for educational purposes only. Do not use it where gambling is restricted. Use responsibly.</p>
     <svg id="d3-ev-chart" width="600" height="400" class="mx-auto"></svg>
   </section>
+  <svg id="ev-heatmap" width="600" height="600"></svg>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+const teams = [1,2,3,4,5,6,7,8,9,10];
+const ratings = {1:1587,2:1571,3:1514,4:1442,5:1350,6:1328,7:1280,8:1210,9:1208,10:1201};
+
+function seriesWinProb(rA, rB) {
+  const p = 1 / (1 + 10 ** ((rB - rA) / 400));
+  return p**2 * (3 - 2*p);
+}
+
+function computeEV(rA, rB, oddsA = 1.5, oddsB = 2.5) {
+  const pA = seriesWinProb(rA, rB);
+  return pA * oddsA - 1;
+}
+
+// Create grid data
+const data = [];
+teams.forEach((a, i) => {
+  teams.forEach((b, j) => {
+    if (a !== b) {
+      data.push({
+        x: j, y: i, teamA: a, teamB: b,
+        ev: computeEV(ratings[a], ratings[b])
+      });
+    }
+  });
+});
+
+const svg = d3.select("#ev-heatmap");
+const cellSize = 50;
+svg.attr("width", cellSize * teams.length).attr("height", cellSize * teams.length);
+
+const colorScale = d3.scaleSequential(d3.interpolateCool)
+  .domain([-1, 1]);
+
+svg.selectAll("rect")
+  .data(data)
+  .enter()
+  .append("rect")
+  .attr("x", d => d.x * cellSize)
+  .attr("y", d => d.y * cellSize)
+  .attr("width", cellSize)
+  .attr("height", cellSize)
+  .attr("fill", d => colorScale(d.ev))
+  .append("title")
+  .text(d => `EV: ${d.ev.toFixed(2)}\n${d.teamA} vs ${d.teamB}`);
+
+svg.selectAll("text.row")
+  .data(teams)
+  .enter()
+  .append("text")
+  .attr("class", "row")
+  .attr("x", 0)
+  .attr("y", (d, i) => i * cellSize + cellSize / 2)
+  .attr("dy", ".35em")
+  .attr("text-anchor", "end")
+  .text(d => "Team " + d);
+
+svg.selectAll("text.col")
+  .data(teams)
+  .enter()
+  .append("text")
+  .attr("class", "col")
+  .attr("x", (d, i) => i * cellSize + cellSize / 2)
+  .attr("y", 10)
+  .attr("text-anchor", "middle")
+  .text(d => "Team " + d);
+</script>
+
 
   <!-- Learn More Section -->
   <section class="py-16 text-center bg-gray-100 px-4">
